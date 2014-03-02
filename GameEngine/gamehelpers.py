@@ -44,6 +44,7 @@ class MainMenuHelper :
         XMLHelper.dump_dict_to_xml({"Properties" : newGameProperties}, fullpath + "/" + Default.PROPERTIES_FILE_NAME)
         
         MainMenuHelper.load_game(gameObject, fullpath)
+        return fullpath
 
         
     @staticmethod

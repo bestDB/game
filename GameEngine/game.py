@@ -86,11 +86,12 @@ class Game:
             
             if Keyboard.is_down(pygame.K_LCTRL) and Keyboard.is_down(pygame.K_d) :
                 DebugHelper.run_debugger()
-            
+                Keyboard.get_pressed()
             
             if Keyboard.is_down(pygame.K_LCTRL) and Keyboard.is_down(pygame.K_s) :
-                MainMenuHelper.save_game(self)
-
+                print "saving game"
+                path = MainMenuHelper.save_game(self)
+                print "game saved as: " + path
                 Keyboard.get_pressed()
             
             for gameObject in self.currGameScreen.activeObjects.values() :
