@@ -1,7 +1,7 @@
 import sys, pygame
 from GameEngine import *
 
-"""
+
 GameScreenFactory.prepare_screen_factory_for_creation("../GameImpl/Properties/")
 
 screen = GameScreen(400, 400)
@@ -21,7 +21,7 @@ screen.add_active_game_object(hero2)
 screen.add_active_game_object(hero)
 
 GameScreenFactory.add_game_screen("basic", screen)
-
+ 
 
 
 screen2 = GameScreen(300,300)
@@ -34,7 +34,7 @@ hero3.actions = {BasicMovingCharacter.MOVE_ACTION : BasicMovingCharacter_MoveAct
 screen2.add_active_game_object(hero3)
 
 GameScreenFactory.add_game_screen("basic2", screen2)
-"""
+
 
 #GameScreenFactory.gameScreens = {"basic" : GAME_SCREEN_DIRECTORY + "basic", "basic2" : GAME_SCREEN_DIRECTORY + "basic2"}
 #MainMenuHelper.get_saved_games("../GameImpl/Properties/properties.xml")
