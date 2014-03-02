@@ -1,7 +1,7 @@
 from commons import Side, Direction, Default
 from actions import AnimatedAction
 from keyboard import Keyboard
-from helpers import TextureHelper, SoundHelper, MathHelper, AnimationHelper
+from GameEngine.gamehelpers import TextureHelper, SoundHelper, MathHelper, AnimationHelper
 from gameobjects import ExtendedDrawableGameObject
 import pygame
 
@@ -12,25 +12,25 @@ class BasicMovingCharacter(ExtendedDrawableGameObject):
     TEXTURES = Default.GAME_ENGINE_TEXTURES_PATH + "basicMovingCreature/"
     SOUNDS = Default.GAME_ENGINE_SOUNDS_PATH + "basicMovingCreature/"
       
-    def __init__(self, posX, posY, maxWidth, maxHeight, texturePath = None):
-        ExtendedDrawableGameObject.__init__(self, posX, posY, maxWidth, maxHeight, texturePath)
+    def __init__(self, posX, posY, maxWidth, maxHeight, screen, texturePath = None):
+        ExtendedDrawableGameObject.__init__(self, posX, posY, maxWidth, maxHeight, screen, texturePath)
         
         self.animationDelay = 50
         self.soundDelay = 50
         self.steering = { Direction.UP : pygame.K_UP, Direction.DOWN : pygame.K_DOWN, Direction.LEFT : pygame.K_LEFT, Direction.RIGHT : pygame.K_RIGHT }
         self.moveSpeeds = {Direction.UP : 0.5, Direction.DOWN : 0.5, Direction.LEFT : 0.5, Direction.RIGHT : 0.5}
         
-        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.UP)] = TextureHelper.allocate_textures([BasicMovingCharacter.TEXTURES + "hbs1.png", BasicMovingCharacter.TEXTURES + "hbs2.png"])
-        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.DOWN)] = TextureHelper.allocate_textures([BasicMovingCharacter.TEXTURES + "hfs1.png", BasicMovingCharacter.TEXTURES + "hfs2.png"])
-        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.LEFT)] = TextureHelper.allocate_textures([BasicMovingCharacter.TEXTURES + "hs2s.png", BasicMovingCharacter.TEXTURES + "hs2s1.png"])
-        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.RIGHT)] = TextureHelper.allocate_textures([BasicMovingCharacter.TEXTURES + "hss.png", BasicMovingCharacter.TEXTURES + "hss1.png"])
-        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.UP_LEFT)] = TextureHelper.allocate_textures([BasicMovingCharacter.TEXTURES + "hs2s.png", BasicMovingCharacter.TEXTURES + "hs2s1.png"])
-        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.UP_RIGHT)] = TextureHelper.allocate_textures([BasicMovingCharacter.TEXTURES + "hss.png", BasicMovingCharacter.TEXTURES + "hss1.png"])
-        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.DOWN_LEFT)] = TextureHelper.allocate_textures([BasicMovingCharacter.TEXTURES + "hs2s.png", BasicMovingCharacter.TEXTURES + "hs2s1.png"])
-        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.DOWN_RIGHT)] = TextureHelper.allocate_textures([BasicMovingCharacter.TEXTURES + "hss.png", BasicMovingCharacter.TEXTURES + "hss1.png"])
-        self.texturesIDs[(BasicMovingCharacter.STOP_ACTION, Side.FRONT)] = TextureHelper.allocate_textures([BasicMovingCharacter.TEXTURES + "hbs.png"])
+        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.UP)] = TextureHelper.allocate_textures(self.screen, [BasicMovingCharacter.TEXTURES + "hbs1.png", BasicMovingCharacter.TEXTURES + "hbs2.png"])
+        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.DOWN)] = TextureHelper.allocate_textures(self.screen, [BasicMovingCharacter.TEXTURES + "hfs1.png", BasicMovingCharacter.TEXTURES + "hfs2.png"])
+        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.LEFT)] = TextureHelper.allocate_textures(self.screen, [BasicMovingCharacter.TEXTURES + "hs2s.png", BasicMovingCharacter.TEXTURES + "hs2s1.png"])
+        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.RIGHT)] = TextureHelper.allocate_textures(self.screen, [BasicMovingCharacter.TEXTURES + "hss.png", BasicMovingCharacter.TEXTURES + "hss1.png"])
+        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.UP_LEFT)] = TextureHelper.allocate_textures(self.screen, [BasicMovingCharacter.TEXTURES + "hs2s.png", BasicMovingCharacter.TEXTURES + "hs2s1.png"])
+        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.UP_RIGHT)] = TextureHelper.allocate_textures(self.screen, [BasicMovingCharacter.TEXTURES + "hss.png", BasicMovingCharacter.TEXTURES + "hss1.png"])
+        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.DOWN_LEFT)] = TextureHelper.allocate_textures(self.screen, [BasicMovingCharacter.TEXTURES + "hs2s.png", BasicMovingCharacter.TEXTURES + "hs2s1.png"])
+        self.texturesIDs[(BasicMovingCharacter.MOVE_ACTION, Direction.DOWN_RIGHT)] = TextureHelper.allocate_textures(self.screen, [BasicMovingCharacter.TEXTURES + "hss.png", BasicMovingCharacter.TEXTURES + "hss1.png"])
+        self.texturesIDs[(BasicMovingCharacter.STOP_ACTION, Side.FRONT)] = TextureHelper.allocate_textures(self.screen, [BasicMovingCharacter.TEXTURES + "hbs.png"])
         
-        self.soundsIDs[(BasicMovingCharacter.MOVE_ACTION, Default.DEFAULT_ACTION)] = SoundHelper.alllocate_sounds([BasicMovingCharacter.SOUNDS + "step.wav"])
+        self.soundsIDs[(BasicMovingCharacter.MOVE_ACTION, Default.DEFAULT_ACTION)] = SoundHelper.alllocate_sounds(self.screen, [BasicMovingCharacter.SOUNDS + "step.wav"])
         
 
 class BasicMovingCharacter_MoveAction(AnimatedAction):
@@ -130,14 +130,14 @@ class BasicRotatingCharacter(ExtendedDrawableGameObject):
     TEXTURES = Default.GAME_ENGINE_TEXTURES_PATH + "basicRotatingCreature/"
     SOUNDS = Default.GAME_ENGINE_SOUNDS_PATH + "basicRotatingCreature/"
       
-    def __init__(self, posX, posY, maxWidth, maxHeight, texturePath = None):
-        ExtendedDrawableGameObject.__init__(self, posX, posY, maxWidth, maxHeight, texturePath)
+    def __init__(self, posX, posY, maxWidth, maxHeight, screen, texturePath = None):
+        ExtendedDrawableGameObject.__init__(self, posX, posY, maxWidth, maxHeight, screen, texturePath)
 
         self.steering = { Direction.FORWARD : pygame.K_UP, Direction.BACKWARD : pygame.K_DOWN, Direction.LEFT : pygame.K_LEFT, Direction.RIGHT : pygame.K_RIGHT }
         self.moveSpeeds = {Direction.FORWARD : 1.0, Direction.BACKWARD : 1.0}
         self.rotationSpeeds = {Direction.LEFT : 1.0, Direction.RIGHT : 1.0}
 
-        self.texturesIDs[(BasicRotatingCharacter.ROTATE_STOP_ACTION, Default.DEFAULT_ACTION)] = TextureHelper.allocate_textures_from_dir(BasicRotatingCharacter.TEXTURES + "stop/")
+        self.texturesIDs[(BasicRotatingCharacter.ROTATE_STOP_ACTION, Default.DEFAULT_ACTION)] = TextureHelper.allocate_textures_from_dir(self.screen, BasicRotatingCharacter.TEXTURES + "stop/")
         
     def get_texture_index_from_angle(self):
         rotationStep = 360 / self.textures[(BasicRotatingCharacter.ROTATE_STOP_ACTION, Default.DEFAULT_ACTION)].__len__()
@@ -216,7 +216,6 @@ class BasicRotatingCharacter_RotateStopAction(AnimatedAction):
         return True   
     
     def invoke_animated_actions(self):
-        redrawNeeded = False
         if  self.actionObject.lastTexture == None :
             self.actionObject.lastTexture = ((BasicRotatingCharacter.ROTATE_STOP_ACTION, Default.DEFAULT_ACTION), 0)
             self.actionObject.set_new_source(self.actionObject.textures[self.actionObject.lastTexture[0]][self.actionObject.lastTexture[1]])

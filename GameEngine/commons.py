@@ -19,8 +19,7 @@ class Colours :
     BLUE = (0,0,255)
     WHITE = (255,255,255)
     BLACK = (0,0,0)
-    
-    
+      
 class Side:
     FRONT = "FRONT"
     BACK = "BACK"
@@ -52,5 +51,11 @@ class Default:
     EXTENDED_DRAWABLE_TEXTURE = GAME_ENGINE_TEXTURES_PATH + "object.jpg"
     
     GAME_SCREEN_EXT = ".gameScr"
-    RES_MAN_EXT = ".rsMan"
     TMP_FOLDER = "tmp/"
+    
+    PROPERTIES_FILE_NAME = "properties.xml"
+    PROPERTY_KEY_GAME_DIRECTORY = "GAME_DIRECTORY"
+    PROPERTY_KEY_GAME_SCREENS_DIRECTORY = "GAME_SCREENS_DIRECTORY"
+    PROPERTY_KEY_GAME_SAVES_DIRECTORY = "GAME_SAVES_DIRECTORY"
+    PROPERTY_KEY_START_SCREEN_NAME = "START_SCREEN_NAME"
+    

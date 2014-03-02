@@ -1,4 +1,4 @@
-from helpers import TextureHelper, ResourceManager, SoundHelper 
+from GameEngine.gamehelpers import TextureHelper, ResourceManager, SoundHelper 
 from commons import Default, GlobalParams, SerializableObject
 from abc import ABCMeta, abstractmethod
 from game import Game
@@ -22,14 +22,16 @@ class BasicGameObject(SerializableObject):
         pass
     
 class BasicDrawable(BasicGameObject):
-    def __init__(self, posX, posY, texturePath):
+    def __init__(self, posX, posY, screen, texturePath):
         BasicGameObject.__init__(self)
-        self.sourceID = TextureHelper.allocate_texture(texturePath)
+        self.screen = screen; 
+        print screen
+        self.sourceID = TextureHelper.allocate_texture(screen, texturePath)
         self.__posX = posX
         self.__posY = posY
         
     def prepare(self):
-        self.source = TextureHelper.get_texture(self.sourceID)    
+        self.source = TextureHelper.get_texture(self.screen, self.sourceID)    
         self.destRect = self.source.get_rect() 
         self.move_graphic_to_position(self.__posX, self.__posY)
         
@@ -46,12 +48,12 @@ class BasicDrawable(BasicGameObject):
 
     def draw(self):
         if self.source != None and self.destRect != None :
-            Game.currGameScreen.draw(self)
+            Game.game.currGameScreen.draw(self)
         else :
             print "unable to draw object UID = " + self.UID.__str__()
     
     def set_new_source(self, surface):
-        self.sourceID = ResourceManager.get_surface_id(surface)
+        self.sourceID = self.screen.resourceManager.get_surface_id(surface)
         self.source = surface
         self.destRect = self.source.get_rect()
     
@@ -61,10 +63,10 @@ class BasicDrawable(BasicGameObject):
 
 
 class ExtendedDrawable(BasicDrawable):
-    def __init__(self, posX, posY, texturePath = None):
+    def __init__(self, posX, posY, screen, texturePath = None):
         if texturePath == None:
             texturePath = Default.EXTENDED_DRAWABLE_TEXTURE 
-        BasicDrawable.__init__(self, posX, posY, texturePath)
+        BasicDrawable.__init__(self, posX, posY, screen, texturePath)
         self.graphicPosX = posX
         self.graphicPosY = posY
     
@@ -167,7 +169,7 @@ class ExtendedGameObject(BasicGameObject):
             if actionI[0] == actionCode :
                 return True
         return False    
-
+    
     def move_by_offset(self, offX, offY):
         self.posX += offX
         self.posY += offY
@@ -179,7 +181,7 @@ class ExtendedGameObject(BasicGameObject):
 
 class ExtendedDrawableGameObject(ExtendedGameObject, ExtendedDrawable):
    
-    def __init__(self, posX, posY, maxWidth, maxHeight, texturePath = None):
+    def __init__(self, posX, posY, maxWidth, maxHeight, screen,  texturePath = None):
         self.texturesIDs = {}
         self.soundsIDs = {}
         self.textures = {}
@@ -193,13 +195,14 @@ class ExtendedDrawableGameObject(ExtendedGameObject, ExtendedDrawable):
         if texturePath == None :
             texturePath = Default.EXTENDED_DRAWABLE_OBJECT_TEXTURE
         ExtendedGameObject.__init__(self, posX, posY, maxWidth, maxHeight)
-        ExtendedDrawable.__init__(self, posX, posY, texturePath)
+        ExtendedDrawable.__init__(self, posX, posY, screen, texturePath)
    
     def prepare(self):
         ExtendedGameObject.prepare(self)
         ExtendedDrawable.prepare(self)
         self.prepare_sounds()
         self.prepare_textures()
+        self.move_graphics_to_logic_position()
    
     def clear(self):
         ExtendedDrawable.clear(self)
@@ -209,11 +212,11 @@ class ExtendedDrawableGameObject(ExtendedGameObject, ExtendedDrawable):
    
     def prepare_textures(self):
         for actionInfo in self.texturesIDs :
-            self.textures[actionInfo] = TextureHelper.get_textures(self.texturesIDs[actionInfo])
+            self.textures[actionInfo] = TextureHelper.get_textures(self.screen, self.texturesIDs[actionInfo])
          
     def prepare_sounds(self):
         for actionInfo in self.soundsIDs :
-            self.sounds[actionInfo] = SoundHelper.get_sounds(self.soundsIDs[actionInfo]) 
+            self.sounds[actionInfo] = SoundHelper.get_sounds(self.screen, self.soundsIDs[actionInfo]) 
    
     def interpret_state(self):
         ExtendedGameObject.interpret_state(self)

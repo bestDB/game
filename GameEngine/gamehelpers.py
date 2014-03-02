@@ -1,119 +1,81 @@
-import pygame, sys, pickle
-from os import listdir, path, makedirs
-from os.path import isfile, join
-from math import radians, sin, cos
-from threading import Thread
-from commons import Default, Colours, Side
-from xml.dom.minidom import parse
-from datetime import datetime
-from shutil import copyfile, copy, rmtree
-
-class CommonHelper :
-    @staticmethod
-    def load_file_list(dirPath):
-        files = []
-        for f in listdir(dirPath) :
-            if isfile(join(dirPath,f)) :
-                files.append(join(dirPath,f))
-        return files
-    
-    @staticmethod
-    def delete_dir(dirPath):
-        rmtree(dirPath)
-    
-    @staticmethod
-    def make_dir(dirPath):
-        d = path.dirname(dirPath) 
-        makedirs(d)
-        
-    @staticmethod
-    def copy_all_files(src, dest):
-        src_files = listdir(src) 
-        for file_name in src_files:
-            full_file_name = path.join(src, file_name)
-            if (path.isfile(full_file_name)):
-                copy(full_file_name, dest)
+import pygame
+from GameEngine.helpers import *
+from _elementtree import XMLParser
 
 class GameHelper :
     @staticmethod
-    def load_game_properties(propertiesFilePath):
-        doc = parse(propertiesFilePath)
-        properties = {}
-        
-        for node in doc.getElementsByTagName("GAME_DIRECTORY") :
-            properties["GAME_DIRECTORY"] = node.firstChild.nodeValue.__str__()
-        
-        for node in doc.getElementsByTagName("GAME_SAVES_DIRECTORY") :
-            properties["GAME_SAVES_DIRECTORY"] = properties["GAME_DIRECTORY"] + node.firstChild.nodeValue.__str__()
-            
-        for node in doc.getElementsByTagName("GAME_SCREEN_DIRECTORY") :
-            properties["GAME_SCREENS_DIRECTORY"] = properties["GAME_DIRECTORY"] + node.firstChild.nodeValue.__str__()
-            
-        for node in doc.getElementsByTagName("START_SCREEN_NAME") :
-            properties["START_SCREEN_NAME"] = node.firstChild.nodeValue.__str__()
-        
+    def load_game_properties_from_file(propertiesDir):
+        properties = XMLHelper.get_tags_values(propertiesDir + Default.PROPERTIES_FILE_NAME) 
         return properties
+
+class MainMenuHelper :
+    
+    @staticmethod
+    def new_game(gameObject, propertiesDir):
+        gameObject.prepare_new_game(propertiesDir)
+    
+    @staticmethod
+    def save_game(gameObject, saveName = None):
+        if saveName == None :
+            now = datetime.now()
+            saveName = now.strftime("%Y-%m-%d_%H-%M-%S")
+        fullpath = gameObject.GAME_SAVES_DIRECTORY + saveName + "/"
+        
+        FileDirHelper.make_dir(fullpath)
+        
+        pygame.image.save(gameObject.currGameScreen.surface, fullpath + "/screenshot.jpg" )
+        
+        gameScreens = GameScreenFactoryHelper.get_game_screens(gameObject.GAME_SCREENS_DIRECTORY)
+        for screenName in gameScreens :
+            if screenName != gameObject.currGameScreenName :
+                path = gameScreens[screenName]
+                GameScreenFactoryHelper.copy_screen_file(screenName, path, fullpath)
+        
+        GameScreenFactoryHelper.dump_game_screen(gameObject.currGameScreenName, gameObject.currGameScreen, fullpath)
+        
+        newGameProperties = {}
+        newGameProperties[Default.PROPERTY_KEY_GAME_DIRECTORY] = gameObject.GAME_DIRECTORY
+        newGameProperties[Default.PROPERTY_KEY_GAME_SAVES_DIRECTORY] = gameObject.GAME_SAVES_DIRECTORY
+        newGameProperties[Default.PROPERTY_KEY_GAME_SCREENS_DIRECTORY] = fullpath
+        newGameProperties[Default.PROPERTY_KEY_START_SCREEN_NAME] = gameObject.currGameScreenName
+
+
+        XMLHelper.dump_dict_to_xml({"Properties" : newGameProperties}, fullpath + "/" + Default.PROPERTIES_FILE_NAME)
+        
+        MainMenuHelper.load_game(gameObject, fullpath)
+
+        
+    @staticmethod
+    def get_saved_games(propertiesDir):
+        savesPath = XMLHelper.get_tag_value(propertiesDir + Default.PROPERTIES_FILE_NAME, Default.PROPERTY_KEY_GAME_DIRECTORY) +\
+            XMLHelper.get_tag_value(propertiesDir + Default.PROPERTIES_FILE_NAME, Default.PROPERTY_KEY_GAME_SAVES_DIRECTORY)
+
+        return FileDirHelper.get_dir_list(savesPath)
+        
+    
+    @staticmethod
+    def load_game(gameObject, savepath):
+        gameObject.currGameScreen = None
+        gameObject.prepare_new_game(savepath)
+
+class GameScreenFactoryHelper :
     
     @staticmethod
     def get_game_screens(gameScreensDirectory):
         screens = {}
-        files = CommonHelper.load_file_list(gameScreensDirectory)
+        files = FileDirHelper.load_file_list(gameScreensDirectory)
         for file in files :
             ext = "." + file.rpartition(".")[2]
             name = file.rpartition("/")[2].split(".")[0]
             if ext == Default.GAME_SCREEN_EXT :
                 screens[name] = file.rpartition(".")[0]
         return screens
-
-class MainMenuHelper :
-    
-    @staticmethod
-    def new_game():
-        pass
-    
-    @staticmethod
-    def save_game(dir, gameScreens, currScreenName, currScreen, saveName = None):
-        
-        currGameProperties = {}
-        
-        if saveName == None :
-            now = datetime.now()
-            saveName = now.strftime("%Y-%m-%d_%H-%M-%S")
-        fullpath = dir + saveName + "/"
-        CommonHelper.make_dir(fullpath)
-    
-        currGameProperties["GAME_SCREENS"] = {}
-    
-        for screenName in gameScreens :
-            path = gameScreens[screenName]
-            GameScreenFactoryHelper.copy_screen_file(screenName, path, fullpath)
-            currGameProperties["GAME_SCREENS"][screenName] = fullpath + screenName
-        
-        currScreen.clear() 
-        GameScreenFactoryHelper.dump_game_screen(currScreenName, currScreen, fullpath)
-        
-        currGameProperties["CURR_GAME_SCREEN"] = GameScreenFactoryHelper.get_screen(fullpath + currScreenName)
-        currGameProperties["GAME_SCREENS_DIRECTORY"] = fullpath
-        
-        return currGameProperties
-    
-    
-    @staticmethod
-    def load_game():
-        pass
-
-class GameScreenFactoryHelper :
     
     @staticmethod
     def dump_game_screen(name, gameScreen, path):
         f = open(path + name + Default.GAME_SCREEN_EXT, 'w')
+        gameScreen.clear()
         pickle.dump(gameScreen, f)
-        f.close()
-        
-        f = open(path + name + Default.RES_MAN_EXT, 'w')
-        ResourceManager.unload_resources()
-        pickle.dump(ResourceManager.manager, f)
-        ResourceManager.reset()    
         f.close()
         
         
@@ -123,11 +85,6 @@ class GameScreenFactoryHelper :
         gameScreen = pickle.load(f) 
         f.close()
         
-        f = open(path + Default.RES_MAN_EXT)    
-        ResourceManager.manager = pickle.load(f)
-        ResourceManager.load_resources()
-        f.close()
-        
         gameScreen.prepare()    
             
         return gameScreen
@@ -135,12 +92,8 @@ class GameScreenFactoryHelper :
     @staticmethod
     def copy_screen_file(name, path, targetDir):
         copyfile(path + Default.GAME_SCREEN_EXT, targetDir + name + Default.GAME_SCREEN_EXT)
-        copyfile(path + Default.RES_MAN_EXT, targetDir + name + Default.RES_MAN_EXT)
   
-
 class ResourceManager :
-    
-    manager = None
 
     def __init__(self):
         self.tPid = 0
@@ -149,56 +102,33 @@ class ResourceManager :
         self.soundsPaths = []
         self.textureSurfaces = []
         self. sounds = []
+  
+    def allocate_sound(self, path):
+        self.soundsPaths.insert(self.sPid, path)
+        self.sPid += 1
+        return self.sPid - 1
     
-    @staticmethod
-    def initialize():
-        ResourceManager.manager = ResourceManager() 
-        
-    @staticmethod    
-    def set_manager(manager) :
-        ResourceManager.manager = manager   
-    
-    @staticmethod
-    def reset():
-        ResourceManager.manager.tPid = 0
-        ResourceManager.manager.sPid = 0
-        ResourceManager.manager.texturesPaths = []
-        ResourceManager.manager.soundsPaths = []
-        ResourceManager.manager.textureSurfaces = []
-        ResourceManager.manager.sounds = []
-    
-    @staticmethod
-    def load_resources():
-        ResourceManager.manager.textureSurfaces = TextureHelper.load_textures(ResourceManager.manager.texturesPaths)
-        ResourceManager.manager.sounds = SoundHelper.load_sounds(ResourceManager.manager.soundsPaths)
+    def allocate_texture(self, path):
+        self.texturesPaths.insert(self.tPid, path)
+        self.tPid += 1
+        return self.tPid - 1
 
-    @staticmethod        
-    def allocate_sound(path):
-        ResourceManager.manager.soundsPaths.insert(ResourceManager.manager.sPid, path)
-        ResourceManager.manager.sPid += 1
-        return ResourceManager.manager.sPid - 1
+    def get_surface_id(self, surface):
+        if surface in self.textureSurfaces :
+            return self.textureSurfaces.index(surface) 
+        
+    def get_sound_id(self, sound):
+        if sound in self.sounds :
+            return self.sounds.index(sound)
+
+    def prepare(self):
+        self.textureSurfaces = TextureHelper.load_textures(self.texturesPaths)
+        self.sounds = SoundHelper.load_sounds(self.soundsPaths)
+
+    def clear(self):
+        self.textureSurfaces = []
+        self.sounds = []     
     
-    @staticmethod
-    def allocate_texture(path):
-        ResourceManager.manager.texturesPaths.insert(ResourceManager.manager.tPid, path)
-        ResourceManager.manager.tPid += 1
-        return ResourceManager.manager.tPid - 1
-
-    @staticmethod
-    def unload_resources():
-        ResourceManager.manager.textureSurfaces = []
-        ResourceManager.manager.sounds = []    
-        
-    @staticmethod    
-    def get_surface_id(surface):
-        if surface in ResourceManager.manager.textureSurfaces :
-            return ResourceManager.manager.textureSurfaces.index(surface)
-        
-    @staticmethod
-    def get_sound_id(sound):
-        if sound in ResourceManager.manager.sounds :
-            return ResourceManager.manager.sounds.index(sound)
-
 class DebugHelper :
     @staticmethod
     def draw_borders(surface, extGO, colour = Colours.WHITE):
@@ -229,34 +159,34 @@ class DebugHelper :
  
 class TextureHelper:
     @staticmethod
-    def allocate_texture(path):
-        return ResourceManager.allocate_texture(path)
+    def allocate_texture(screen, path):
+        return screen.resourceManager.allocate_texture(path)
      
     @staticmethod
-    def allocate_textures(paths):
+    def allocate_textures(screen, paths):
         result = []
         for path in paths :
-            result.append(TextureHelper.allocate_texture(path)) 
+            result.append(TextureHelper.allocate_texture(screen, path)) 
         return result
       
     @staticmethod
-    def allocate_textures_from_dir(dirPath):
-        return TextureHelper.allocate_textures(CommonHelper.load_file_list(dirPath))  
+    def allocate_textures_from_dir(screen, dirPath):
+        return TextureHelper.allocate_textures(screen, FileDirHelper.load_file_list(dirPath))  
         
     @staticmethod
-    def get_texture(ID):
-        return ResourceManager.manager.textureSurfaces[ID]
+    def get_texture(screen, ID):
+        return screen.resourceManager.textureSurfaces[ID]
     
     @staticmethod
-    def get_textures(ids):
+    def get_textures(screen, ids):
         result = []
         for ID in ids :
-            result.append(TextureHelper.get_texture(ID))
+            result.append(TextureHelper.get_texture(screen, ID))
         return result     
         
     @staticmethod
     def load_texture(path):
-        print "Loading texture : " + path.__str__()
+        #print "Loading texture : " + path.__str__()
         result = pygame.image.load(path)
         if path.rpartition(".")[2] == "png":
             result = result.convert_alpha()
@@ -275,25 +205,25 @@ class SoundHelper:
     nextId = 0
     
     @staticmethod
-    def allocate_sound(path):
-        return ResourceManager.allocate_sound(path)
+    def allocate_sound(screen, path):
+        return screen.resourceManager.allocate_sound(path)
      
     @staticmethod
-    def alllocate_sounds(paths):
+    def alllocate_sounds(screen, paths):
         result = []
         for path in paths :
-            result.append(SoundHelper.allocate_sound(path)) 
+            result.append(SoundHelper.allocate_sound(screen, path)) 
         return result
         
     @staticmethod
-    def get_sound(ID):
-        return ResourceManager.manager.sounds[ID]
+    def get_sound(screen, ID):
+        return screen.resourceManager.sounds[ID]
     
     @staticmethod
-    def get_sounds(ids):
+    def get_sounds(screen, ids):
         result = []
         for ID in ids :
-            result.append(SoundHelper.get_sound(ID))
+            result.append(SoundHelper.get_sound(screen, ID))
         return result   
         
     @staticmethod    
@@ -308,7 +238,7 @@ class SoundHelper:
     @staticmethod 
     def load_sound(path):
         if path != None :
-            print "Loading sound : " + path.__str__()
+            #print "Loading sound : " + path.__str__()
             return pygame.mixer.Sound(path)
         return None
     
@@ -318,14 +248,6 @@ class SoundHelper:
         for path in paths :
             loaded.append(SoundHelper.load_sound(path))
         return loaded
-    
-    @staticmethod
-    def create_channel(path):
-        sound = pygame.mixer.Sound(path)
-        channel = pygame.mixer.Channel(SoundHelper.nextId)
-        channel.queue(sound)
-        SoundHelper.nextId += 1
-        return channel  
 
 class ExtendedGameObjectHelper:
     @staticmethod
@@ -386,101 +308,7 @@ class ExtendedGameObjectHelper:
                         if MathHelper.crosses(b1, b2) :
                             collisionGroups.append(b1key)
         return collisionGroups
-        
-class MathHelper:
-    @staticmethod
-    def calculate_shift(angle, direction, speedX, speedY):  
-        angle = radians(angle % 360)
-        shiftY = cos(angle) * speedY
-        shiftX = sin(angle) * speedX
-        if direction > 0 :
-            shiftY *= -1
-            shiftX *= -1
-        return (shiftX, shiftY)
-    
-    @staticmethod
-    def rotate_line(line, rotationPoint, angleInDegrees):
-        "line - ((x1,y1),(x2,y2))"
-        if angleInDegrees == 0 :
-            return line
-        return ( MathHelper.rotate_point(line[0], rotationPoint, angleInDegrees) , MathHelper.rotate_point(line[1], rotationPoint, angleInDegrees))
-    
-    @staticmethod
-    def rotate_point(point, rotationPoint, angleInDegrees):
-        """point - wspolrzedne pktu (x,y) do obrocenia
-        rotationPoint - wspolrzedne punktu (x,y) wzgledem ktorego ma zostac obrocone"""
-        if angleInDegrees == 0 :
-            return point
-        x = point[0]
-        y = point[1]
-        x_u = rotationPoint[0]
-        y_u = rotationPoint[1]
-        angle = radians(-1* angleInDegrees)
-        x1 = (x - x_u) * cos(angle) - (y - y_u) * sin(angle) + x_u
-        y1 = (x - x_u) * sin(angle) + (y - y_u) * cos(angle) + y_u
-        return (x1,y1)
-    
-    
-    @staticmethod
-    def line_intersection(line1, line2):
-        """
-        Return the coordinates of a point of intersection given two lines.
-        Return None if the lines are parallel, but non-collinear.
-        Return an arbitrary point of intersection if the lines are collinear.
-    
-        Parameters:
-        line1 and line2: lines given by 2 points (a 2-tuple of (x,y)-coords).
-        """
-        (x1,y1), (x2,y2) = line1
-        (u1,v1), (u2,v2) = line2
-        (a,b), (c,d) = (x2-x1, u1-u2), (y2-y1, v1-v2)
-        e, f = u1-x1, v1-y1
-        # Solve ((a,b), (c,d)) * (t,s) = (e,f)
-        denom = float(a*d - b*c)
-        if MathHelper.near(denom, 0):
-            # parallel
-            # If collinear, the equation is solvable with t = 0.
-            # When t=0, s would have to equal e/b and f/d
-            if MathHelper.near(float(e)/b, float(f)/d):
-                # collinear
-                px = x1
-                py = y1
-            else:
-                return None
-        else:
-            t = (e*d - b*f)/denom
-            # s = (a*f - e*c)/denom
-            px = x1 + t*(x2-x1)
-            py = y1 + t*(y2-y1)
-        return px, py
-    
-    
-    
-    @staticmethod
-    def crosses(line1, line2):
-        """
-        Return True if line segment line1 intersects line segment line2 and 
-        line1 and line2 are not parallel.
-        """
-        (x1,y1), (x2,y2) = line1
-        (u1,v1), (u2,v2) = line2
-        (a,b), (c,d) = (x2-x1, u1-u2), (y2-y1, v1-v2)
-        e, f = u1-x1, v1-y1
-        denom = float(a*d - b*c)
-        if MathHelper.near(denom, 0):
-            # parallel
-            return False
-        else:
-            t = (e*d - b*f)/denom
-            s = (a*f - e*c)/denom
-            # When 0<=t<=1 and 0<=s<=1 the point of intersection occurs within the
-            # line segments
-            return 0<=t<=1 and 0<=s<=1
-    
-    @staticmethod
-    def near(a, b, rtol=1e-5, atol=1e-8):
-        return abs(a - b) < (atol + rtol * abs(b))
-    
+     
 class AnimationHelper:
     @staticmethod
     def default_animation_behaviour(extDrawableGO):

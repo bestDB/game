@@ -1,6 +1,5 @@
-import pygame, pickle, sys
-from shutil import copyfile
-from helpers import TextureHelper, ResourceManager, GameHelper, GameScreenFactoryHelper
+import pygame
+from GameEngine.gamehelpers import TextureHelper, ResourceManager, GameHelper, GameScreenFactoryHelper
 from commons import Default, SerializableObject
 
 
@@ -70,8 +69,10 @@ class GameScreen(Screen) :
         Screen.__init__(self, width, height, opts)
         self.activeObjects = {}
         self.passiveObjects = {}
+        self.resourceManager = ResourceManager()
     
     def prepare(self):
+        self.resourceManager.prepare()
         Screen.prepare(self)
         for obj in self.activeObjects.values() :
             obj.prepare()
@@ -79,6 +80,7 @@ class GameScreen(Screen) :
             obj.prepare()
             
     def clear(self):
+        self.resourceManager.clear();
         Screen.clear(self)
         for obj in self.activeObjects.values() :
             obj.clear()
@@ -96,8 +98,14 @@ class GameScreenFactory :
     gameScreensPath = Default.GAME_SCREENS_PATH
     
     @staticmethod
-    def prepare_screen_factory(propertiesDirectory):
-        GameScreenFactory.gameScreensPath = GameHelper.load_game_properties(propertiesDirectory)["GAME_SCREENS_DIRECTORY"]
+    def prepare_screen_factory_for_creation(propertiesDirectory):
+        GameScreenFactory.gameScreensPath = GameHelper.load_game_properties_from_file(propertiesDirectory)[Default.PROPERTY_KEY_GAME_SCREENS_DIRECTORY]
+    
+    @staticmethod
+    def prepare_screen_factory_for_game(screensDirectory):
+        GameScreenFactory.gameScreensPath = screensDirectory
+        GameScreenFactory.gameScreens = GameScreenFactoryHelper.get_game_screens(screensDirectory)
+
     
     @staticmethod
     def get_screen_names():
@@ -131,69 +139,4 @@ class GameScreenFactory :
     def get_screen(name):
         path = GameScreenFactory.gameScreens[name]
         return GameScreenFactoryHelper.get_screen(path)    
-
-"""
-class GameScreenFactory :
-    gameScreens = {}
-    gameScreensPath = Default.GAME_SCREENS_PATH
-    
-    @staticmethod
-    def prepare_screen_factory(propertiesDirectory):
-        GameScreenFactory.gameScreensPath = GameHelper.load_game_properties(propertiesDirectory)["GAME_SCREENS_DIRECTORY"]
-    
-    @staticmethod
-    def get_screen_names():
-        return GameScreenFactory.gameScreens.keys()
-    
-    @staticmethod
-    def save_game_screen(name, gameScreen, path = None):
-        if path == None :
-            path = GameScreenFactory.gameScreensPath
-        gameScreen.clear()
-        GameScreenFactory.dump_game_screen(name, gameScreen, path)
-        GameScreenFactory.gameScreens[name] = path + name
-        result = GameScreenFactory.get_screen(name)
-        return result
-    
-    @staticmethod
-    def add_game_screen(name, gameScreen, path = None):
-        if path == None :
-            path = GameScreenFactory.gameScreensPath
-        GameScreenFactory.gameScreens[name] = path + name
-        GameScreenFactory.dump_game_screen(name, gameScreen, path)
-    
-    @staticmethod
-    def dump_game_screen(name, gameScreen, path = None):
-        if path == None :
-            path = GameScreenFactory.gameScreensPath
-        f = open(path + name + Default.GAME_SCREEN_EXT, 'w')
-        pickle.dump(gameScreen, f)
-        f.close()
-        
-        f = open(path + name + Default.RES_MAN_EXT, 'w')
-        ResourceManager.unload_resources()
-        pickle.dump(ResourceManager.manager, f)
-        ResourceManager.reset()    
-        f.close()
-        
-        
-    @staticmethod
-    def get_screen(name):
-        f = open(GameScreenFactory.gameScreens[name] +  Default.GAME_SCREEN_EXT, 'r')
-        gameScreen = pickle.load(f) 
-        f.close()
-        
-        f = open(GameScreenFactory.gameScreens[name] + Default.RES_MAN_EXT)    
-        ResourceManager.manager = pickle.load(f)
-        ResourceManager.load_resources()
-        f.close()
-        
-        gameScreen.prepare()    
-            
-        return gameScreen
-    
-    @staticmethod
-    def copy_screen_file(name, targetDir):
-        copyfile(GameScreenFactory.gameScreens[name] + Default.GAME_SCREEN_EXT, targetDir)
-        copyfile(GameScreenFactory.gameScreens[name] + Default.RES_MAN_EXT, targetDir)
-"""     
+ 
