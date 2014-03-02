@@ -12,6 +12,7 @@ class MainMenuHelper :
     
     @staticmethod
     def new_game(gameObject, propertiesDir):
+        print "creating menu"
         gameObject.prepare_new_game(propertiesDir)
     
     @staticmethod
