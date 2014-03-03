@@ -1,8 +1,7 @@
 from GameEngine.gamehelpers import TextureHelper, ResourceManager, SoundHelper 
 from commons import Default, GlobalParams, SerializableObject
 from abc import ABCMeta, abstractmethod
-from game import Game
-
+from game import Game  
 
 class BasicGameObject(SerializableObject):
     __metaclass__ = ABCMeta    
@@ -25,7 +24,6 @@ class BasicDrawable(BasicGameObject):
     def __init__(self, posX, posY, screen, texturePath):
         BasicGameObject.__init__(self)
         self.screen = screen; 
-        print screen
         self.sourceID = TextureHelper.allocate_texture(screen, texturePath)
         self.__posX = posX
         self.__posY = posY
@@ -48,7 +46,7 @@ class BasicDrawable(BasicGameObject):
 
     def draw(self):
         if self.source != None and self.destRect != None :
-            Game.game.currGameScreen.draw(self)
+            Game.currentGameObject.currGameScreen.draw(self)
         else :
             print "unable to draw object UID = " + self.UID.__str__()
     
@@ -58,6 +56,8 @@ class BasicDrawable(BasicGameObject):
         self.destRect = self.source.get_rect()
     
     def move_graphic_to_position(self, posX, posY):
+        self.__posX = posX
+        self.__posY = posY
         self.destRect.centerx = posX
         self.destRect.centery = posY
 
@@ -231,4 +231,5 @@ class ExtendedDrawableGameObject(ExtendedGameObject, ExtendedDrawable):
     def move_graphics_to_logic_position(self):
         ExtendedDrawable.move_graphic_to_position(self,self.posX, self.posY)
          
+    
     

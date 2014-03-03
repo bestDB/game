@@ -8,7 +8,7 @@ from commons import Default
 
 class Game:
     
-    game = None
+    currentGameObject = None
     
     def __init__(self):
         pygame.init()   
@@ -32,7 +32,7 @@ class Game:
         tmpPath = self.init_tmp_dir()
         GameScreenFactory.prepare_screen_factory_for_game(tmpPath)
         self.set_screen(self.START_GAME_SCREEN)
-        Game.game = self
+        Game.currentGameObject = self
         
     
     def init_tmp_dir(self):
@@ -75,7 +75,7 @@ class Game:
                 self.toSetGameScreen = None
                 
             if self.currGameScreen == None :
-                raise Exception("currGameScreen for game is not set")
+                raise Exception("currGameScreen for currentGameObject is not set")
             
             for event in pygame.event.get() :
                 if event.type == pygame.QUIT: 
@@ -89,9 +89,9 @@ class Game:
                 Keyboard.get_pressed()
             
             if Keyboard.is_down(pygame.K_LCTRL) and Keyboard.is_down(pygame.K_s) :
-                print "saving game"
+                print "saving currentGameObject"
                 path = MainMenuHelper.save_game(self)
-                print "game saved as: " + path
+                print "currentGameObject saved as: " + path
                 Keyboard.get_pressed()
             
             for gameObject in self.currGameScreen.activeObjects.values() :

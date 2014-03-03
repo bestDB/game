@@ -1,7 +1,7 @@
 import sys, pygame
 from GameEngine import *
 
-
+"""
 GameScreenFactory.prepare_screen_factory_for_creation("../GameImpl/Properties/")
 
 screen = GameScreen(400, 400)
@@ -44,4 +44,12 @@ game = Game()
 MainMenuHelper.new_game(game, "../GameImpl/Properties/")
 #MainMenuHelper.load_game(game, "../GameImpl/Save/2014-03-02_16-46-00/")
 game.start_game()
+"""
+
+
+
+
+tiledScreen = TiledGameScreen(100, 100)
+tiledScreen.tiles_from_x_y_coords([50, 75], [50])
+
 
