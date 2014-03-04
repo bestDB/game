@@ -19,6 +19,12 @@ class Colours :
     BLUE = (0,0,255)
     WHITE = (255,255,255)
     BLACK = (0,0,0)
+
+class Corners :
+    TOP_LEFT = "TOP_LEFT"
+    TOP_RIGHT = "TOP_RIGHT"
+    BOTTOM_LEFT = "BOTTOM_LEFT"
+    BOTTOM_RIGHT = "BOTTOM_RIGHT"
       
 class Side:
     FRONT = "FRONT"

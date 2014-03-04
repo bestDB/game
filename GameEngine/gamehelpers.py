@@ -1,6 +1,10 @@
-import pygame
-from GameEngine.helpers import *
+import pygame, pickle, sys
+from datetime import *
+from threading import * 
+from shutil import *
+from GameEngine.basichelpers import *
 from _elementtree import XMLParser
+
 
 class GameHelper :
     @staticmethod
@@ -135,9 +139,9 @@ class DebugHelper :
     @staticmethod
     def draw_borders(surface, extGO, colour = Colours.WHITE):
         borders = ExtendedGameObjectHelper.get_borders(extGO)
+        
         for borderLines in borders.values() :
-            for line in borderLines :
-                pygame.draw.line(surface, colour, line[0], line[1], 3) 
+            DrawingHelper.draw_lines(borderLines, surface, colour)
         pygame.display.update()
     
     @staticmethod

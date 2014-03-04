@@ -1,7 +1,7 @@
 import pygame, sys
 from keyboard import Keyboard
-from GameEngine.gamehelpers import DebugHelper, GameHelper, MainMenuHelper
-from GameEngine.helpers import FileDirHelper
+from gamehelpers import *
+from GameEngine.basichelpers import *
 from screen import GameScreenFactory
 from commons import Default
 
@@ -99,7 +99,7 @@ class Game:
             for gameObject in self.currGameScreen.activeObjects.values() :
                 gameObject.interpret_state()
                 
-            self.currGameScreen.refreshScreen()
+            self.currGameScreen.refresh_screen()
             
             
             #obj1 = Game.currGameScreen.activeObjects[2]

@@ -1,5 +1,6 @@
 import sys, pygame
 from GameEngine import *
+from time import sleep
 
 """
 GameScreenFactory.prepare_screen_factory_for_creation("../GameImpl/Properties/")
@@ -47,9 +48,19 @@ game.start_game()
 """
 
 
+screen = Screen(300,300)
+screen.prepare()
+tiledScreen = TiledSpace(100, 100)
+tiledScreen.tiles_from_x_y_coords([20,50], [20,50])
 
 
-tiledScreen = TiledGameScreen(100, 100)
-tiledScreen.tiles_from_x_y_coords([50, 75], [50])
+tiledSurface2 = TiledSpace(30,30)
+tiledSurface2.tiles_from_x_y_coords([15], [15])
+tiledScreen.add_tile(5, tiledSurface2)
+
+tiledScreen.draw_tile(screen.surface, offX = 20, offY=20, showNums = True)
+pygame.display.update()
+sleep(3)
+screen.clear_screen()
 
 

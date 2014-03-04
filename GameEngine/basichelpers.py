@@ -1,12 +1,23 @@
-import pygame, sys, pickle
+import pygame
+from commons import *
 from os import listdir, path, makedirs
 from os.path import isfile, join, exists
 from math import radians, sin, cos
-from threading import Thread
-from commons import Default, Colours, Side
 from xml.dom.minidom import parse
-from datetime import datetime
-from shutil import copyfile, copy, rmtree
+from shutil import copy, rmtree
+
+class DrawingHelper :
+    @staticmethod
+    def draw_lines(lines, surface, colour = Colours.WHITE):
+        for line in lines :
+                pygame.draw.line(surface, colour, line[0], line[1], 3) 
+
+    @staticmethod
+    def draw_simple_text(text, surface, coords, color = Colours.WHITE, fontSize = 10):
+        pygame.font.init()
+        myfont = pygame.font.SysFont("arial", fontSize)
+        label = myfont.render(text, 1, color)
+        surface.blit(label, coords)
 
 class XMLHelper :
     
@@ -77,9 +88,33 @@ class FileDirHelper :
             full_file_name = path.join(src, file_name)
             if (path.isfile(full_file_name)):
                 copy(full_file_name, dest)
-
       
 class MathHelper:
+    @staticmethod
+    def get_line_center(line):
+        return ( (line[0][0] + line[1][0])/2, (line[0][1] + line[1][1])/2 )
+    
+    @staticmethod
+    def get_square_center(sideLine, topLine):
+        y = MathHelper.get_line_center(sideLine)[1]
+        x = MathHelper.get_line_center(topLine)[0]
+        return (x,y)
+    
+    @staticmethod
+    def move_lines_by_shift(linesList, shX, shY):
+        moved = []
+        for line in linesList :
+            moved.append(MathHelper.move_line_by_shift(line, shX, shY))
+        return moved
+    
+    @staticmethod
+    def move_line_by_shift(line, shX, shY):
+        return ( (MathHelper.move_point_by_shift(line[0], shX, shY)), (MathHelper.move_point_by_shift(line[1], shX, shY)) )
+    
+    @staticmethod
+    def move_point_by_shift(point, shX, shY):
+        return (point[0] + shX, point[1] + shY)
+    
     @staticmethod
     def calculate_shift(angle, direction, speedX, speedY):  
         angle = radians(angle % 360)

@@ -1,9 +1,8 @@
-from commons import Side, Direction, Default
+from commons import *
 from actions import AnimatedAction
 from keyboard import Keyboard
-from GameEngine.gamehelpers import TextureHelper, SoundHelper, MathHelper, AnimationHelper
-from gameobjects import ExtendedDrawableGameObject
-import pygame
+from gamehelpers import *
+from basicgameobjects import ExtendedDrawableGameObject
 
 class BasicMovingCharacter(ExtendedDrawableGameObject):
     
