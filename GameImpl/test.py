@@ -50,17 +50,21 @@ game.start_game()
 
 screen = Screen(300,300)
 screen.prepare()
-tiledScreen = TiledSpace(100, 100)
-tiledScreen.tiles_from_x_y_coords([20,50], [20,50])
+tiledScreen = TiledSpace(250, 250)
+tiledScreen.tiles_from_x_y_coords([50,100, 150, 200], [125])
 
 
-tiledSurface2 = TiledSpace(30,30)
-tiledSurface2.tiles_from_x_y_coords([15], [15])
-tiledScreen.add_tile(5, tiledSurface2)
+tiledSurface2 = TiledSpace(50,125)
+tiledSurface2.tiles_from_x_y_coords([], [62.5])
 
-tiledScreen.draw_tile(screen.surface, offX = 20, offY=20, showNums = True)
+tiledSurface3 = TiledSpace(50, 62.5)
+tiledSurface3.tiles_from_x_y_coords([25], [31.25])
+tiledSurface2.add_tile(1, tiledSurface3)
+
+tiledScreen.add_tile(8, tiledSurface2)
+tiledScreen.draw_tile(screen.surface, showNums = True)
 pygame.display.update()
-sleep(3)
+sleep(30)
 screen.clear_screen()
 
 

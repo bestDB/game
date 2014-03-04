@@ -8,13 +8,23 @@ class Tile(SerializableObject):
  
     @abstractmethod
     def __init__(self):
-        self.centerx = None
-        self.centery = None
+        self.active = False
+        self.tileCenterX = None
+        self.tileCenterY = None
  
     @abstractmethod 
     def draw_tile(self):
         pass
- 
+    
+    @abstractmethod
+    def on_focus(self):
+        pass
+    
+    @abstractmethod
+    def on_activated(self):
+        pass
+        
+        
 class TiledSpace(Tile) :
     def __init__(self, width, height, showBorders = True):
         self.width = width
@@ -35,11 +45,17 @@ class TiledSpace(Tile) :
     def prepare(self):
         pass   
     
+    def on_focus(self):
+        pass
+    
+    def on_activated(self):
+        pass
+    
     def add_tile(self, index, tileObject):
         self.tiles[index] = tileObject
         tileCenter = self.get_tile_center(index,self.offX,self.offY)
-        tileObject.centerx = tileCenter[0]
-        tileObject.centery = tileCenter[1]
+        tileObject.tileCenterX = tileCenter[0]
+        tileObject.tileCenterY = tileCenter[1]
     
     def get_tile_borders(self, index):
         tile = self.tilesCoords[index]
@@ -65,7 +81,11 @@ class TiledSpace(Tile) :
         return tileCenterCoords
     
     def draw_tile(self, surface, offX = None, offY = None, showBorders = None, showNums = None):
-        
+        if offX == None :
+            offX = self.offX
+        if offY == None :
+            offY = self.offY
+            
         for tileNum in self.tiles :
             tile = self.tiles[tileNum]
             if tile != None :
@@ -78,8 +98,8 @@ class TiledSpace(Tile) :
                     print "Tile" + tileNum.__str__() + "is not a tiledSpace"
                     
                     tileCenterCoords = self.get_tile_center(tileNum, offX, offY)
-                    tile.centerx = tileCenterCoords[0] 
-                    tile.centery = tileCenterCoords[1]
+                    tile.tileCenterX = tileCenterCoords[0] 
+                    tile.tileCenterY = tileCenterCoords[1]
                     tile.draw_tile()
         
         if showBorders == True or (showBorders == None and self.showBorders == True):
