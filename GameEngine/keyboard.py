@@ -5,7 +5,7 @@ class Keyboard :
     pressed = None
     
     @staticmethod
-    def get_pressed():
+    def update_state():
         pygame.event.pump()
         Keyboard.pressed = pygame.key.get_pressed()
     

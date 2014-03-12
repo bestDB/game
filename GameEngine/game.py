@@ -82,17 +82,17 @@ class Game:
                     FileDirHelper.delete_dir(self.GAME_DIRECTORY + Default.TMP_FOLDER)
                     sys.exit()
                     
-            Keyboard.get_pressed()
+            Keyboard.update_state() 
             
             if Keyboard.is_down(pygame.K_LCTRL) and Keyboard.is_down(pygame.K_d) :
                 DebugHelper.run_debugger()
-                Keyboard.get_pressed()
+                Keyboard.update_state()
             
             if Keyboard.is_down(pygame.K_LCTRL) and Keyboard.is_down(pygame.K_s) :
                 print "saving currentGameObject"
                 path = MainMenuHelper.save_game(self)
                 print "currentGameObject saved as: " + path
-                Keyboard.get_pressed()
+                Keyboard.update_state()
             
             for gameObject in self.currGameScreen.activeObjects.values() :
                 gameObject.analyze_state()

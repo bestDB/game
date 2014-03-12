@@ -7,3 +7,4 @@ from game import *
 from keyboard import *
 from basiccreatures import *
 from additionalgameobjects import *
+from mouse import *

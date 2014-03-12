@@ -5,6 +5,7 @@ from os.path import isfile, join, exists
 from math import radians, sin, cos
 from xml.dom.minidom import parse
 from shutil import copy, rmtree
+from time import sleep
 
 class DrawingHelper :
     @staticmethod
@@ -90,6 +91,26 @@ class FileDirHelper :
                 copy(full_file_name, dest)
       
 class MathHelper:
+    @staticmethod
+    def check_if_point_inside_rectangle(point, A, B, D):
+        bax = B[0] - A[0]
+        bay = B[1] - A[1]
+        dax = D[0] - A[0]
+        day = D[1] - A[1]
+        x = point[0]
+        y = point[1]
+        
+        if (x - A[0])*bax + (y - A[1])*bay < 0.0 :
+            return False
+        if (x - B[0])*bax + (y - B[1])*bay > 0.0 :
+            return False
+        if (x - A[0])*dax + (y - A[1])*day < 0.0 :
+            return False
+        if (x - D[0])*dax + (y - D[1])*day > 0.0 :
+            return False
+        
+        return True 
+    
     @staticmethod
     def get_line_center(line):
         return ( (line[0][0] + line[1][0])/2, (line[0][1] + line[1][1])/2 )

@@ -48,9 +48,12 @@ game.start_game()
 """
 
 
+
+
 screen = Screen(300,300)
 screen.prepare()
 tiledScreen = TiledSpace(250, 250)
+tiledScreen.is_main_tile = True
 tiledScreen.tiles_from_x_y_coords([50,100, 150, 200], [125])
 
 
@@ -59,12 +62,30 @@ tiledSurface2.tiles_from_x_y_coords([], [62.5])
 
 tiledSurface3 = TiledSpace(50, 62.5)
 tiledSurface3.tiles_from_x_y_coords([25], [31.25])
+tiledSurface3.showNums = True
+#tiledSurface3.add_tile(1, Button())
+
 tiledSurface2.add_tile(1, tiledSurface3)
 
 tiledScreen.add_tile(8, tiledSurface2)
-tiledScreen.draw_tile(screen.surface, showNums = True)
+tiledScreen.showBorders = True
+tiledScreen.showNums = True
+tiledScreen.show_tile(screen.surface)
+
+i = 0
+
+while True:
+    Mouse.update_state()
+
+#tiledScreen.hide_tile()
+
+#sleep(3)
+#tiledScreen.hide_tile(screen.surface)
 pygame.display.update()
-sleep(30)
+while True :
+    pass
+
+
 screen.clear_screen()
 
 
