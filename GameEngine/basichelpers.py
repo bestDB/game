@@ -11,7 +11,7 @@ class DrawingHelper :
     @staticmethod
     def draw_lines(lines, surface, colour = Colours.WHITE):
         for line in lines :
-                pygame.draw.line(surface, colour, line[0], line[1], 3) 
+                pygame.draw.line(surface, colour, line[0], line[1], 3)
 
     @staticmethod
     def draw_simple_text(text, surface, coords, color = Colours.WHITE, fontSize = 10):
@@ -21,33 +21,33 @@ class DrawingHelper :
         surface.blit(label, coords)
 
 class XMLHelper :
-    
+
     @staticmethod
     def get_tags_values(fileName) :
         doc = parse(fileName)
         parsedTags = {}
-        
+
         for firstLevelNod in doc.childNodes :
             for secondLevelNod in firstLevelNod.childNodes :
                 if secondLevelNod.firstChild != None :
-                    parsedTags[secondLevelNod.nodeName.__str__().strip()] = secondLevelNod.firstChild.nodeValue.__str__().strip()       
-                    
+                    parsedTags[secondLevelNod.nodeName.__str__().strip()] = secondLevelNod.firstChild.nodeValue.__str__().strip()
+
         return parsedTags
-    
+
     @staticmethod
     def get_tag_value(fileName, tagName):
         doc = parse(fileName)
-        
+
         for node in doc.getElementsByTagName(tagName) :
             return node.firstChild.nodeValue.__str__().strip()
-    
+
     @staticmethod
     def dump_dict_to_xml(dictionary, fileName):
         f = open(fileName, 'w')
         resultXml = XMLHelper.get_xml_from_dict(dictionary,"", "");
         f.write(resultXml)
         f.close
-        
+
     @staticmethod
     def get_xml_from_dict(obj, xml, indent):
         if type(obj) is dict :
@@ -56,12 +56,12 @@ class XMLHelper :
             return xml
         else :
             return indent + obj.__str__() + "\n"
-            
+
 class FileDirHelper :
     @staticmethod
     def get_dir_list(dirPath):
         return listdir(dirPath)
-    
+
     @staticmethod
     def load_file_list(dirPath):
         files = []
@@ -69,37 +69,60 @@ class FileDirHelper :
             if isfile(join(dirPath,f)) :
                 files.append(join(dirPath,f))
         return files
-    
+
     @staticmethod
     def delete_dir(dirPath):
         if exists(dirPath) :
             rmtree(dirPath)
-    
+
     @staticmethod
     def make_dir(dirPath):
         d = path.dirname(dirPath)
         if exists(dirPath) :
-            FileDirHelper.delete_dir(dirPath) 
+            FileDirHelper.delete_dir(dirPath)
         makedirs(d)
-        
+
     @staticmethod
     def copy_all_files(src, dest):
-        src_files = listdir(src) 
+        src_files = listdir(src)
         for file_name in src_files:
             full_file_name = path.join(src, file_name)
             if (path.isfile(full_file_name)):
                 copy(full_file_name, dest)
-      
+
 class MathHelper:
+
     @staticmethod
-    def check_if_point_inside_rectangle(point, A, B, D):
+    def point_inside_polygon(point,poly):
+        x = point[0]
+        y = point[1]
+        n = len(poly)
+        inside =False
+
+        p1x,p1y = poly[0]
+        for i in range(n+1):
+            p2x,p2y = poly[i % n]
+            if y > min(p1y,p2y):
+                if y <= max(p1y,p2y):
+                    if x <= max(p1x,p2x):
+                        if p1y != p2y:
+                            xinters = (y-p1y)*(p2x-p1x)/(p2y-p1y)+p1x
+                        if p1x == p2x or x <= xinters:
+                            inside = not inside
+            p1x,p1y = p2x,p2y
+
+        return inside
+
+
+    @staticmethod
+    def point_inside_rectangle(point, A, B, D):
         bax = B[0] - A[0]
         bay = B[1] - A[1]
         dax = D[0] - A[0]
         day = D[1] - A[1]
         x = point[0]
         y = point[1]
-        
+
         if (x - A[0])*bax + (y - A[1])*bay < 0.0 :
             return False
         if (x - B[0])*bax + (y - B[1])*bay > 0.0 :
@@ -108,36 +131,43 @@ class MathHelper:
             return False
         if (x - D[0])*dax + (y - D[1])*day > 0.0 :
             return False
-        
-        return True 
-    
+
+        return True
+
     @staticmethod
     def get_line_center(line):
         return ( (line[0][0] + line[1][0])/2, (line[0][1] + line[1][1])/2 )
-    
+
     @staticmethod
     def get_square_center(sideLine, topLine):
         y = MathHelper.get_line_center(sideLine)[1]
         x = MathHelper.get_line_center(topLine)[0]
         return (x,y)
-    
+
     @staticmethod
     def move_lines_by_shift(linesList, shX, shY):
         moved = []
         for line in linesList :
             moved.append(MathHelper.move_line_by_shift(line, shX, shY))
         return moved
-    
+
     @staticmethod
     def move_line_by_shift(line, shX, shY):
         return ( (MathHelper.move_point_by_shift(line[0], shX, shY)), (MathHelper.move_point_by_shift(line[1], shX, shY)) )
-    
+
+    @staticmethod
+    def move_points_by_shift(points, shX, shY):
+        result = []
+        for point in points :
+            result.append(MathHelper.move_point_by_shift(point, shX, shY))
+        return result
+
     @staticmethod
     def move_point_by_shift(point, shX, shY):
         return (point[0] + shX, point[1] + shY)
-    
+
     @staticmethod
-    def calculate_shift(angle, direction, speedX, speedY):  
+    def calculate_shift(angle, direction, speedX, speedY):
         angle = radians(angle % 360)
         shiftY = cos(angle) * speedY
         shiftX = sin(angle) * speedX
@@ -145,14 +175,14 @@ class MathHelper:
             shiftY *= -1
             shiftX *= -1
         return (shiftX, shiftY)
-    
+
     @staticmethod
     def rotate_line(line, rotationPoint, angleInDegrees):
         "line - ((x1,y1),(x2,y2))"
         if angleInDegrees == 0 :
             return line
         return ( MathHelper.rotate_point(line[0], rotationPoint, angleInDegrees) , MathHelper.rotate_point(line[1], rotationPoint, angleInDegrees))
-    
+
     @staticmethod
     def rotate_point(point, rotationPoint, angleInDegrees):
         """point - wspolrzedne pktu (x,y) do obrocenia
@@ -167,15 +197,15 @@ class MathHelper:
         x1 = (x - x_u) * cos(angle) - (y - y_u) * sin(angle) + x_u
         y1 = (x - x_u) * sin(angle) + (y - y_u) * cos(angle) + y_u
         return (x1,y1)
-    
-    
+
+
     @staticmethod
     def line_intersection(line1, line2):
         """
         Return the coordinates of a point of intersection given two lines.
         Return None if the lines are parallel, but non-collinear.
         Return an arbitrary point of intersection if the lines are collinear.
-    
+
         Parameters:
         line1 and line2: lines given by 2 points (a 2-tuple of (x,y)-coords).
         """
@@ -201,13 +231,13 @@ class MathHelper:
             px = x1 + t*(x2-x1)
             py = y1 + t*(y2-y1)
         return px, py
-    
-    
-    
+
+
+
     @staticmethod
     def crosses(line1, line2):
         """
-        Return True if line segment line1 intersects line segment line2 and 
+        Return True if line segment line1 intersects line segment line2 and
         line1 and line2 are not parallel.
         """
         (x1,y1), (x2,y2) = line1
@@ -224,8 +254,7 @@ class MathHelper:
             # When 0<=t<=1 and 0<=s<=1 the point of intersection occurs within the
             # line segments
             return 0<=t<=1 and 0<=s<=1
-    
+
     @staticmethod
     def near(a, b, rtol=1e-5, atol=1e-8):
         return abs(a - b) < (atol + rtol * abs(b))
- 
